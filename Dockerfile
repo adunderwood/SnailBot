@@ -15,5 +15,8 @@ RUN npm install --only=production
 # Bundle app source
 COPY . ./
 
+# Create a temporary directory
+RUN mkdir -p ./tmp
+
 EXPOSE 7777
 CMD [ "npm", "start" ]

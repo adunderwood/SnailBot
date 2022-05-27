@@ -9,7 +9,7 @@ const ColorThief = require('color-thief');
 
 const html_colors = require("./colors.json");
 
-const hostname = '127.0.0.1';
+const hostname = '0.0.0.0';
 const port = 7777;
 
 // get querystring parameters
@@ -33,13 +33,23 @@ const server = http.createServer((req, res) => {
   url_params = req.params;
   //console.log(req.params.img);
 
+  console.log("Request made.");
+
   if (req.params.img) {
+    console.log("Image requested: " + req.params.img);
     downloadImage(req.params.img, uuidv4(), res);
   }
 
 });
 
 server.listen(port, hostname, () => {
+  // create temp folder if it doesn't exist
+  var dir = './tmp';
+  if (!fs.existsSync(dir)){
+    console.log("Created tmp directory");
+    fs.mkdirSync(dir);
+  }
+
   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
@@ -155,7 +165,7 @@ async function getMetaData(file, res) {
   var grayCode = 'rgb( ' + gray + ',' + gray + ',' + gray + ')';
 
   var grayHex = onecolor(grayCode).hex();
-  colors.gray = grayHex;
+  colors.gray = grayHex.replace("#","");
 
   var output = {};
   output.colors = colors;
