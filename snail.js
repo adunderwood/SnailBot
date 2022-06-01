@@ -34,14 +34,12 @@ const server = http.createServer((req, res) => {
   url_params = req.params
   //console.log(req.params.img)
 
-  console.log("Request made.")
-
   if (req.params.img) {
     console.log("Image requested: " + req.params.img)
     downloadImage(req.params.img, uuidv4(), res)
   } else {
     var fail = {}
-    res.end(fail)
+    res.end(JSON.stringify(fail))
   }
 })
 
@@ -57,19 +55,26 @@ server.listen(port, hostname, () => {
 })
 
 async function downloadImage(url, filepath, res) {
+var fail = {}
+
 axios.get(encodeURI(url), {responseType: "stream"} )
   .then(response => {
 
-  filepath = "./tmp/" + filepath;
-  response.data.pipe(fs.createWriteStream(filepath))
-    .on('error', () => {
-      // log error and process
-      var fail = {}
-      res.end(fail)
+    filepath = "./tmp/" + filepath
+    response.data.pipe(fs.createWriteStream(filepath))
+      .on('error', () => {
+        // log error and process
+        var fail = {}
+        res.end(JSON.stringify(fail))
+      })
+      .on('finish', () => {
+        getMetaData(filepath, res)
+      })
     })
-    .on('finish', () => {
-      getMetaData(filepath, res)
-    })
+  .catch(function(err) {
+    var fail = {}
+    res.end(JSON.stringify(fail))
+    console.log("Error: image not found")
   })
 }
 
@@ -187,9 +192,10 @@ async function getMetaData(file, res) {
 
 function sendData(file, res) {
 
-  res.writeHead(200);
+  var output = JSON.stringify(file)
+  console.log(output)
 
-  floutput = JSON.stringify(file)
-  res.end(floutput);
+  res.writeHead(200)
+  res.end(output)
 
 }
