@@ -159,6 +159,8 @@ function toGray(vals) {
 async function getMetaData(file, res) {
   colorThief = new ColorThief()
 
+  if (file) {
+
   var rgb = colorThief.getColor(file)
   var rgbCode = 'rgb( ' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')'; // 'rgb(r, g, b)'
 
@@ -174,9 +176,6 @@ async function getMetaData(file, res) {
   var grayHex = onecolor(grayCode).hex()
   colors.gray = grayHex.replace("#","")
 
-  var output = {}
-  output.colors = colors
-
   // delete file
   fs.unlink(file, (err) => {
     if (err) {
@@ -184,6 +183,12 @@ async function getMetaData(file, res) {
       return
     }
   })
+  }
+
+  var output = {}
+  if (colors) {
+    output.colors = colors
+  }
 
   // try to attach meta data, if not, just send what you got
   sendData(output, res)
