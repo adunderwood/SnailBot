@@ -87,7 +87,8 @@ function getBaseColors() {
   }
 }
 
-// https://stackoverflow.com/questions/4057475/rounding-colour-values-to-the-nearest-of-a-small-set-of-colours
+// https://stackoverflow.com/questions
+// /4057475/rounding-colour-values-to-the-nearest-of-a-small-set-of-colours
 function getSimilarColors (color) {
     getBaseColors()
 
@@ -161,33 +162,50 @@ async function getMetaData(file, res) {
 
   if (file) {
 
-  var rgb = colorThief.getColor(file)
-  var rgbCode = 'rgb( ' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')'; // 'rgb(r, g, b)'
+    var rgb = colorThief.getColor(file)
+    var pal = colorThief.getPalette(file)
+    var colors = {}
+    var palette = []
 
-  var hex = onecolor(rgbCode).hex()
+    if (rgb) {
+      var rgbCode = 'rgb( ' + rgb[0] + ',' + rgb[1] + ',' + rgb[2] + ')'; // 'rgb(r, g, b)'
 
-  var colors = {}
-  colors.actual = hex.replace("#","")
-  colors.similar = getSimilarColors(rgb)
+      var hex = onecolor(rgbCode).hex()
+      var gray = toGray(rgb)
+      var grayCode = 'rgb( ' + gray + ',' + gray + ',' + gray + ')'
 
-  var gray = toGray(rgb)
-  var grayCode = 'rgb( ' + gray + ',' + gray + ',' + gray + ')'
+      var grayHex = onecolor(grayCode).hex()
 
-  var grayHex = onecolor(grayCode).hex()
-  colors.gray = grayHex.replace("#","")
-
-  // delete file
-  fs.unlink(file, (err) => {
-    if (err) {
-      console.error(err)
-      return
+      colors.actual = hex.replace("#","")
+      colors.gray = grayHex.replace("#","")
+      //colors.similar = getSimilarColors(rgb)
     }
-  })
+
+    // add palette
+    for (var i = 0; i < pal.length; i++) {
+      var current = pal[i]
+
+      var rgbCode = 'rgb( ' + current[0] + ',' + current[1] + ',' + current[2] + ')'; // 'rgb(r, g, b)'
+      var hex = onecolor(rgbCode).hex()
+
+      var tmp = "color_" + i
+      palette.push(hex.replace("#",""))
+
+    }
+
+    // delete file
+    fs.unlink(file, (err) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+    })
   }
 
   var output = {}
   if (colors) {
     output.colors = colors
+    output.palette = palette
   }
 
   // try to attach meta data, if not, just send what you got
